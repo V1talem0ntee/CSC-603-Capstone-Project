@@ -1,0 +1,14 @@
+{
+  "name": "ai-travel-wingman",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal local backend for AI Travel WingMan",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test/chatgpt.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

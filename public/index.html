@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Plan your next trip with a destination, travel dates, and budget." />
+    <title>AI Travel WingMan</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="AI Travel WingMan home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21 3-6.5 18-3.8-7.7L3 9.5 21 3Z" />
+            <path d="m10.7 13.3 5.1-5.1" />
+          </svg>
+        </span>
+        <span>AI Travel <strong>WingMan</strong></span>
+      </a>
+    </header>
+
+    <main class="planner">
+      <div class="intro">
+        <p class="eyebrow">YOUR NEXT ADVENTURE</p>
+        <h1>Where will you go next?</h1>
+        <p class="intro-description">Tell us your destination, travel dates, and budget to start planning your trip.</p>
+      </div>
+
+      <section class="account-panel" aria-labelledby="account-heading">
+        <div class="account-copy">
+          <h2 id="account-heading">Connect your ChatGPT plan</h2>
+          <p id="account-status" role="status">Checking connection...</p>
+          <p class="account-notice">When connected, trip details are sent to OpenAI and requests use your existing ChatGPT plan allowance. Eligibility and workspace policies apply, including for school accounts.</p>
+        </div>
+        <div class="account-actions">
+          <button id="connect-button" type="button" data-oai-siwc-button disabled>Continue with ChatGPT</button>
+          <a class="usage-link" id="usage-link" href="https://chatgpt.com/#settings" target="_blank" rel="noopener noreferrer" hidden>Manage access in ChatGPT</a>
+          <button class="disconnect-button" id="disconnect-button" type="button" hidden>Disconnect</button>
+        </div>
+      </section>
+
+      <section class="input-panel" aria-labelledby="trip-heading">
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">01</span>
+          <h2 id="trip-heading">Trip details</h2>
+        </div>
+
+        <form id="trip-form">
+          <div class="form-grid">
+            <div class="field">
+              <label for="destination">Destination</label>
+              <input id="destination" name="destination" type="text" placeholder="e.g. San Francisco" maxlength="120" autocomplete="off" required />
+              <p class="field-hint">Enter a city or region</p>
+            </div>
+
+            <fieldset class="field date-field">
+              <legend>Travel dates</legend>
+              <div class="date-range">
+                <div class="date-input">
+                  <label class="sr-only" for="start-date">Start date</label>
+                  <input id="start-date" name="startDate" type="date" aria-label="Start date" required />
+                </div>
+                <span class="date-separator" aria-hidden="true">—</span>
+                <div class="date-input">
+                  <label class="sr-only" for="end-date">End date</label>
+                  <input id="end-date" name="endDate" type="date" aria-label="End date" required />
+                </div>
+              </div>
+              <p class="field-hint">Start date &mdash; End date</p>
+            </fieldset>
+
+            <div class="field">
+              <label for="budget">Travel budget</label>
+              <div class="budget-input">
+                <span class="currency-prefix" aria-hidden="true">$</span>
+                <input id="budget" name="budget" type="number" placeholder="1,000" min="0.01" step="0.01" inputmode="decimal" aria-describedby="budget-hint" required />
+                <span class="currency-suffix" aria-hidden="true">USD</span>
+              </div>
+              <p class="field-hint" id="budget-hint">Total trip budget in US dollars</p>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <p>Your next trip starts here.</p>
+            <button id="generate-button" type="submit">
+              <span id="button-label">Generate suggestions</span>
+              <svg class="button-arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14m-5-5 5 5-5 5" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="output-panel" aria-labelledby="suggestions-heading">
+        <div class="output-heading">
+          <div class="section-heading">
+            <span class="step-number" aria-hidden="true">02</span>
+            <h2 id="suggestions-heading">AI travel suggestions</h2>
+          </div>
+          <span class="demo-badge" id="response-mode">Demo mode</span>
+        </div>
+        <div id="output" class="output-content is-empty" role="status" aria-live="polite" aria-atomic="true" aria-busy="false">
+          <span class="empty-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z" />
+              <path d="M9 3v15m6-12v15" />
+            </svg>
+          </span>
+          <p class="empty-title">Your travel plans belong here</p>
+          <p class="empty-description">Fill in your trip details and generate suggestions to see them here.</p>
+        </div>
+        <p class="output-note" id="output-note">Demo responses are shown until you connect an eligible ChatGPT plan. Live web search is not enabled.</p>
+      </section>
+      <footer class="page-footer">AI Travel WingMan <span aria-hidden="true">&middot;</span> Every trip starts with an idea.</footer>
+    </main>
+  </body>
+</html>

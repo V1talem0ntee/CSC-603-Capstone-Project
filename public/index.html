@@ -6,6 +6,8 @@
     <meta name="description" content="Plan your next trip with a destination, travel dates, and budget." />
     <title>AI Travel WingMan</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/itinerary.js" defer></script>
+    <script src="/itinerary-view.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -19,6 +21,7 @@
         </span>
         <span>AI Travel <strong>WingMan</strong></span>
       </a>
+      <nav class="site-nav" aria-label="Planner pages"><a href="/" aria-current="page">Trip planner</a><a href="/personalized">Personalized travel</a><a href="/travel-dna">Create Travel DNA</a></nav>
     </header>
 
     <main class="planner">
@@ -32,7 +35,7 @@
         <div class="account-copy">
           <h2 id="account-heading">Connect your ChatGPT plan</h2>
           <p id="account-status" role="status">Checking connection...</p>
-          <p class="account-notice">When connected, trip details are sent to OpenAI and requests use your existing ChatGPT plan allowance. Eligibility and workspace policies apply, including for school accounts.</p>
+          <p class="account-notice">When connected, trip details and confirmed accommodation addresses are sent to OpenAI. Hotel, dining and local traffic research use web search and your ChatGPT plan allowance. Eligibility and workspace policies apply, including for school accounts.</p>
         </div>
         <div class="account-actions">
           <button id="connect-button" type="button" data-oai-siwc-button disabled>Continue with ChatGPT</button>
@@ -82,6 +85,18 @@
             </div>
           </div>
 
+          <div class="field transport-field">
+            <label for="transport-mode">How will you get around?</label>
+            <select id="transport-mode" name="transportMode" aria-describedby="traffic-hint">
+              <option value="mixed">Recommend a mix of transport</option>
+              <option value="driving">Driving</option>
+              <option value="transit">Public transit</option>
+              <option value="walking">Walking</option>
+              <option value="cycling">Cycling</option>
+            </select>
+            <p class="field-hint" id="traffic-hint">AI considers local peak-hour patterns when ordering stops and suggesting departure times. Web research is not live traffic; journey slots are estimates.</p>
+          </div>
+
           <div class="form-actions">
             <p>Your next trip starts here.</p>
             <button id="generate-button" type="submit">
@@ -102,7 +117,8 @@
           </div>
           <span class="demo-badge" id="response-mode">Demo mode</span>
         </div>
-        <div id="output" class="output-content is-empty" role="status" aria-live="polite" aria-atomic="true" aria-busy="false">
+        <p id="plan-feedback" class="plan-feedback" role="status" aria-live="polite"></p>
+        <div id="output" class="output-content is-empty" aria-busy="false">
           <span class="empty-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
               <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Z" />
@@ -112,7 +128,7 @@
           <p class="empty-title">Your travel plans belong here</p>
           <p class="empty-description">Fill in your trip details and generate suggestions to see them here.</p>
         </div>
-        <p class="output-note" id="output-note">Demo responses are shown until you connect an eligible ChatGPT plan. Live web search is not enabled.</p>
+        <p class="output-note" id="output-note">Demo plans contain no researched prices. Connect an eligible ChatGPT plan with web search to look up hotels and restaurants.</p>
       </section>
       <footer class="page-footer">AI Travel WingMan <span aria-hidden="true">&middot;</span> Every trip starts with an idea.</footer>
     </main>

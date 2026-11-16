@@ -10,7 +10,7 @@ const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'test-key', alg: 'RS2
 const clock = 1794260000000;
 
 function fixture({ scopes = 'openid email profile resource.invoke chatgpt.tokens.use.direct', modifyClaims,
-  events, catalogError, refresh = false, badSignature = false } = {}) {
+  events, catalogError, responsesError, refresh = false, badSignature = false } = {}) {
   const session = {};
   const calls = [];
   let nonce;
@@ -41,6 +41,7 @@ function fixture({ scopes = 'openid email profile resource.invoke chatgpt.tokens
       return Response.json({ models: [{ slug: 'test-model', display_name: 'Test model', visibility: 'list' }] });
     }
     if (url.endsWith('/responses')) {
+      if (responsesError) return new Response('private upstream details', { status: responsesError });
       const values = events || [
         { type: 'response.output_text.delta', delta: 'Day 1: Visit a park.' },
         { type: 'response.completed' },
@@ -138,6 +139,112 @@ test('identity-only sign-in cannot consume plan allowance', async () => {
   assert.equal(f.calls.some(call => call.url.endsWith('/responses')), false);
 });
 
+test('trip requests produce validated daily itinerary data from the model response', async () => {
+  const { validateTrip } = require('../public/itinerary');
+  const trip = validateTrip({ destination: 'San Francisco', startDate: '2027-06-01', endDate: '2027-06-01', budget: 500 });
+  const reply = JSON.stringify({ summary: 'A day in the city.', notes: [], days: [
+    { title: 'Parks and neighborhoods', activities: [{ title: 'Visit a park', details: 'Allow time for walking.', timeOfDay: 'Morning' }] },
+  ] });
+  const f = fixture({ events: [{ type: 'response.output_text.delta', delta: reply }, { type: 'response.completed' }] });
+  await f.finish();
+  const result = await f.auth.suggest(f.session, 'Plan a day in San Francisco.', trip);
+  assert.equal(result.itinerary.mode, 'chatgpt');
+  assert.equal(result.itinerary.days[0].date, '2027-06-01');
+  assert.equal(result.itinerary.days[0].activities[0].title, 'Visit a park');
+  assert.equal(result.itinerary.days[0].hotel.completed, false);
+  const request = JSON.parse(f.calls.find(call => call.url.endsWith('/responses')).options.body);
+  assert.match(request.instructions, /exactly 1 days/);
+  assert.match(request.instructions, /Return only valid JSON/);
+  assert.deepEqual(request.tools, [{ type: 'web_search' }]);
+  assert.equal(request.tool_choice, 'required');
+  assert.deepEqual(request.include, ['web_search_call.action.sources']);
+});
+
+test('restaurant lookups only keep venues and prices backed by provider search metadata', async () => {
+  const sourceUrl = 'https://menu.example/menu';
+  const restaurant = { name: 'Test Restaurant', address: '10 Test Street, Test City',
+    description: 'A test venue.', whyKnown: 'Test local guide listing.',
+    sources: [{ url: sourceUrl, title: 'Test menu' }],
+    price: { text: 'USD 20-30', basis: 'Per person, one main and a drink, excluding tax and tips.', sourceUrl, kind: 'menu_estimate' } };
+  const f = fixture({ events: [
+    { type: 'response.output_item.done', item: { type: 'web_search_call', status: 'completed', action: { sources: [{ url: sourceUrl }] } } },
+    { type: 'response.output_text.delta', delta: JSON.stringify({ restaurants: [restaurant,
+      { ...restaurant, name: 'Unsourced Venue', sources: [{ url: 'https://invented.example/' }] }] }) },
+    { type: 'response.completed' },
+  ] });
+  await f.finish();
+  const result = await f.auth.dining(f.session,
+    { destination: 'Test City', startDate: '2027-06-01', endDate: '2027-06-02', budget: 500 },
+    { kind: 'stay', name: 'My stay', address: '20 Test Avenue, Test City' });
+  assert.equal(result.mode, 'web');
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].price.kind, 'menu_estimate');
+  assert.equal(result.items[0].price.sourceUrl, sourceUrl);
+  assert.equal(result.retrievedAt, new Date(clock).toISOString());
+  const request = JSON.parse(f.calls.find(call => call.url.endsWith('/responses')).options.body);
+  assert.ok(request.input[0].content.includes('20 Test Avenue'));
+});
+
+test('connected trip planning carries transport preferences and keeps only retrieved traffic windows', async () => {
+  const { validateTrip, restorePlan } = require('../public/itinerary');
+  const trip = validateTrip({ destination: 'Test City', startDate: '2027-06-01', endDate: '2027-06-01', budget: 500, transportMode: 'driving' });
+  const sourceUrl = 'https://transport.example/peak-report';
+  const period = { label: 'Test peak', daysOfWeek: [1, 2, 3, 4, 5], startTime: '07:00', endTime: '09:00',
+    area: 'Test road', description: 'Synthetic historical test data.', sources: [{ url: sourceUrl, title: 'Test report' }] };
+  const raw = { traffic: { timeZone: 'America/Los_Angeles', peakPeriods: [period,
+    { ...period, sources: [{ url: 'https://invented.example/' }] }] }, days: [{ title: 'Test day',
+    mobility: { strategy: 'Visit nearby stops, then transfer after the typical peak.' }, activities: [
+      { title: 'First', location: '1 Test Road, Test City' },
+      { title: 'Second', location: '2 Test Road, Test City', transfer: { mode: 'driving', departureTime: '09:30', arrivalTime: '10:00',
+        bufferMinutes: 10, reason: 'Planning estimate; leave after the peak.' } },
+    ] }] };
+  const f = fixture({ events: [
+    { type: 'response.output_item.done', item: { type: 'web_search_call', status: 'completed', action: { sources: [{ url: sourceUrl }] } } },
+    { type: 'response.output_text.delta', delta: JSON.stringify(raw) }, { type: 'response.completed' },
+  ] });
+  await f.finish();
+  const { itinerary } = await f.auth.suggest(f.session, 'Plan my trip.', trip);
+  assert.equal(itinerary.transportMode, 'driving');
+  assert.equal(itinerary.traffic.basis, 'sourced_patterns');
+  assert.equal(itinerary.traffic.peakPeriods.length, 1);
+  assert.equal(itinerary.traffic.retrievedAt, new Date(clock).toISOString());
+  assert.equal(itinerary.days[0].activities[1].transfer.departureTime, '09:30');
+  assert.deepEqual(restorePlan(JSON.parse(JSON.stringify(itinerary))), itinerary);
+  const request = JSON.parse(f.calls.find(call => call.url.endsWith('/responses')).options.body);
+  assert.equal(JSON.parse(request.input[0].content).trip.transportMode, 'driving');
+  assert.equal(request.tool_choice, 'required');
+  assert.match(request.instructions, /community discussions published during the current calendar month/);
+  assert.match(request.instructions, /anecdotal, qualitative context/);
+});
+
+test('connected planning returns a concise report derived from the itinerary', async () => {
+  const { validateTrip } = require('../public/itinerary');
+  const trip = validateTrip({ destination: 'Paris', startDate: '2027-06-01', endDate: '2027-06-01', budget: 500 });
+  const profile = { schema_version: '1.0', profile_type: 'travel_dna',
+    interests: [{ specific_interest: 'Street photography' }], unknown_preferences: ['Preferred pace'] };
+  const raw = { summary: 'A photography-focused day.',
+    days: [{ title: 'Photo day', activities: [{ title: 'Montmartre photo walk', details: 'Photograph neighborhood streets.' }] }] };
+  const f = fixture({ events: [{ type: 'response.output_text.delta', delta: JSON.stringify(raw) }, { type: 'response.completed' }] });
+  await f.finish();
+  const result = await f.auth.suggest(f.session, 'Plan my trip.', trip, { profile });
+  assert.equal(result.report.report_type, 'travel_plan_summary');
+  assert.equal(result.report.trip.destination, 'Paris');
+  assert.equal(result.report.daily_plan[0].activities[0].title, 'Montmartre photo walk');
+  assert.equal(Object.hasOwn(result.report, 'signals'), false);
+  assert.equal(JSON.stringify(result.report).includes('Street photography'), false);
+});
+
+test('restaurant search fails clearly if search does not run or the workspace rejects it', async () => {
+  const noSearch = fixture({ events: [
+    { type: 'response.output_text.delta', delta: '{"restaurants":[]}' }, { type: 'response.completed' },
+  ] });
+  await noSearch.finish();
+  await assert.rejects(noSearch.auth.dining(noSearch.session, {}, {}), /Web search did not run/);
+  const blocked = fixture({ responsesError: 403 });
+  await blocked.finish();
+  await assert.rejects(blocked.auth.dining(blocked.session, {}, {}), /did not allow web search/);
+});
+
 test('expired access tokens share one refresh and rotate the refresh token', async () => {
   const f = fixture({ refresh: true });
   await f.finish();
@@ -186,6 +293,11 @@ function localClient(handler) {
 test('local routes protect state changes, bind callbacks to a cookie and disconnect', async () => {
   const client = localClient(createApp({ hostId: 'urn:uuid:test-host' }));
   assert.equal((await client('GET', '/')).status, 200);
+  for (const file of ['/app.js', '/itinerary.js', '/itinerary-view.js']) {
+    const asset = await client('GET', file);
+    assert.equal(asset.status, 200);
+    assert.match(asset.headers['content-type'], /javascript/);
+  }
   assert.equal((await client('GET', '/api/health')).json().status, 'ok');
   assert.equal((await client('GET', '/chatgpt.js')).status, 404);
   assert.equal((await client('GET', '/.local/chatgpt-host-id')).status, 404);

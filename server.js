@@ -1,8 +1,10 @@
-const http = require('node:http');
+ const http = require('node:http');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { createChatGPT } = require('./chatgpt');
+const { validateTrip, createReport, demoPlan } = require('./public/itinerary');
+const { validate: validatePersonalization } = require('./public/personalization');
 
 const port = Number(process.env.PORT || 3000);
 
@@ -17,7 +19,7 @@ function readJson(req) {
     const chunks = [];
     req.on('data', (chunk) => {
       size += chunk.length;
-      if (size > 16 * 1024) {
+      if (size > 64 * 1024) {
         chunks.length = 0;
         reject(Object.assign(new Error('Request body is too large.'), { status: 413 }));
       } else {
@@ -25,7 +27,7 @@ function readJson(req) {
       }
     });
     req.on('end', () => {
-      if (size > 16 * 1024) return;
+      if (size > 64 * 1024) return;
       try {
         resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
       } catch {
@@ -101,8 +103,14 @@ function createApp({ auth = createChatGPT(), hostId, appPort = port } = {}) {
   // Only these public files are served; project files stay private.
   const publicFiles = {
     '/': ['index.html', 'text/html; charset=utf-8'],
+    '/personalized': ['personalized.html', 'text/html; charset=utf-8'],
+    '/travel-dna': ['travel-dna.html', 'text/html; charset=utf-8'],
+    '/personalization.js': ['personalization.js', 'text/javascript; charset=utf-8'],
+    '/travel-dna.js': ['travel-dna.js', 'text/javascript; charset=utf-8'],
     '/styles.css': ['styles.css', 'text/css; charset=utf-8'],
     '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
+    '/itinerary.js': ['itinerary.js', 'text/javascript; charset=utf-8'],
+    '/itinerary-view.js': ['itinerary-view.js', 'text/javascript; charset=utf-8'],
   };
   if (req.method === 'GET' && Object.hasOwn(publicFiles, pathname)) {
     const [filename, contentType] = publicFiles[pathname];
@@ -120,6 +128,33 @@ function createApp({ auth = createChatGPT(), hostId, appPort = port } = {}) {
     return sendJson(res, 200, { status: 'ok', mode: auth.status(session).planEnabled ? 'chatgpt' : 'demo' });
   }
 
+  if (req.method === 'POST' && pathname === '/api/dining') {
+    try {
+      const body = await readJson(req);
+      const trip = validateTrip(body?.trip);
+      const input = body?.anchor;
+      if (!input || !['stay', 'day'].includes(input.kind)) {
+        return sendJson(res, 400, { error: 'Please confirm a stay or select a day-end location.' });
+      }
+      const clean = (value, length) => typeof value === 'string' ? value.trim().slice(0, length) : '';
+      const anchor = input.kind === 'stay'
+        ? { kind: 'stay', name: clean(input.name, 180), address: clean(input.address, 500) }
+        : { kind: 'day', name: clean(input.name, 200), address: clean(input.address, 500), date: clean(input.date, 10) };
+      if (anchor.kind === 'stay' ? anchor.address.length < 5
+        : !anchor.name || !/^\d{4}-\d{2}-\d{2}$/.test(anchor.date) || anchor.date < trip.startDate || anchor.date > trip.endDate
+          || !Number.isFinite(Date.parse(`${anchor.date}T00:00:00Z`))
+          || new Date(`${anchor.date}T00:00:00Z`).toISOString().slice(0, 10) !== anchor.date) {
+        return sendJson(res, 400, { error: 'Please provide a complete address or a valid stop within your travel dates.' });
+      }
+      if (!auth.status(session).connected) {
+        return sendJson(res, 200, { mode: 'demo', recommendations: { mode: 'unavailable', items: [], retrievedAt: null } });
+      }
+      return sendJson(res, 200, { mode: 'chatgpt', recommendations: await auth.dining(session, trip, anchor) });
+    } catch (error) {
+      return sendJson(res, error.status || 500, { error: error.status ? error.message : 'Could not retrieve restaurant recommendations.' });
+    }
+  }
+
   if (req.method === 'POST' && pathname === '/api/chat') {
     try {
       const body = await readJson(req);
@@ -128,13 +163,21 @@ function createApp({ auth = createChatGPT(), hostId, appPort = port } = {}) {
         return sendJson(res, 400, { error: 'message must be a non-empty string.' });
       }
 
+      const personalization = body.personalization === undefined ? undefined : validatePersonalization(body.personalization);
+      const trip = body.trip === undefined ? undefined : validateTrip(body.trip, { destinationOptional: Boolean(personalization) });
+      if (personalization && !trip) return sendJson(res, 400, { error: 'Personalized planning requires trip details.' });
       if (auth.status(session).connected) {
-        return sendJson(res, 200, await auth.suggest(session, message.trim()));
+        return sendJson(res, 200, await auth.suggest(session, message.trim(), trip, personalization));
+      }
+      if (trip && !trip.destination) {
+        return sendJson(res, 400, { error: 'Connect ChatGPT to receive an AI-recommended destination, or enter a destination to use demo mode.' });
       }
       // Keep the original demo available before the user connects an account.
+      const itinerary = trip ? { ...demoPlan(trip), mode: 'demo' } : null;
       return sendJson(res, 200, {
         mode: 'demo',
-        reply: `Your trip details:\n${message.trim()}\n\nThis is a demo response. The backend connection is working. AI trip planning is not connected yet.`,
+        reply: `Your trip details:\n${message.trim()}\n\nThis is a demo response. The backend connection is working. AI trip planning is not connected yet. Demo itineraries are not personalized.`,
+        ...(itinerary ? { itinerary, report: createReport(itinerary) } : {}),
       });
     } catch (error) {
       return sendJson(res, error.status || 500, {

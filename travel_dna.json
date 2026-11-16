@@ -1,0 +1,181 @@
+{
+  "schema_version": "1.0",
+  "profile_type": "travel_dna",
+  "profile_summary": "A curious, detail-oriented user with strong interests in technology, photography, history, gaming, and food. They often compare options and ask for concrete evidence, but their preferred travel pace, destinations, lodging, and budget are not established. Treat travel ideas as possibilities rather than assumed preferences.",
+  "personality_traits": [
+    {
+      "trait": "Curious and exploratory",
+      "description": "Often asks follow-up questions across subjects such as how things work, local food, technology, history, and current events.",
+      "confidence": "high",
+      "evidence_type": "explicit"
+    },
+    {
+      "trait": "Evidence-seeking decision maker",
+      "description": "Frequently requests comparisons, practical details, price checks, and verification before forming a view.",
+      "confidence": "high",
+      "evidence_type": "inferred"
+    },
+    {
+      "trait": "Uses structure for some goals",
+      "description": "Has requested reading schedules, study plans, and stepwise practice. This may make structured travel information useful, but does not establish a preference for tightly scheduled vacations.",
+      "confidence": "medium",
+      "evidence_type": "inferred"
+    },
+    {
+      "trait": "Open to exploring specific new options",
+      "description": "Has asked about unfamiliar equipment, activities, and cuisines. Questions alone do not confirm enjoyment or willingness to include them in a trip.",
+      "confidence": "low",
+      "evidence_type": "inferred"
+    }
+  ],
+  "interests": [
+    {
+      "category": "Photography and aviation",
+      "specific_interest": "Photography equipment and photographing airshows; has considered telephoto lenses for airshows and general photography.",
+      "interest_level": "high",
+      "confidence": "high",
+      "reason": "Past context explicitly describes camera gear choices and airshows as a photography use case."
+    },
+    {
+      "category": "Motorsports",
+      "specific_interest": "Racing events, including Laguna Seca, as photography subjects.",
+      "interest_level": "high",
+      "confidence": "high",
+      "reason": "Motorsports were mentioned as a use case for photography gear."
+    },
+    {
+      "category": "Technology and consumer electronics",
+      "specific_interest": "PC hardware, gaming peripherals, audio equipment, cameras, and software troubleshooting.",
+      "interest_level": "high",
+      "confidence": "high",
+      "reason": "Repeated detailed comparisons and troubleshooting requests across these areas."
+    },
+    {
+      "category": "Gaming",
+      "specific_interest": "Competitive PC games, aim practice, gaming audio, keyboards, and mouse-pad setups.",
+      "interest_level": "high",
+      "confidence": "high",
+      "reason": "Past context includes sustained discussion of Counter-Strike, Valorant, AimLab, and gaming equipment."
+    },
+    {
+      "category": "History and civics",
+      "specific_interest": "U.S. history, historical arguments, and current civic issues.",
+      "interest_level": "high",
+      "confidence": "high",
+      "reason": "Ongoing AP U.S. History work and repeated questions about historical and civic topics."
+    },
+    {
+      "category": "Food and local cuisine",
+      "specific_interest": "Learning about Vietnamese sandwich fillings and finding regional food shops; has also asked about Korean-market promotions.",
+      "interest_level": "medium",
+      "confidence": "medium",
+      "reason": "Questions show curiosity about particular foods and food businesses, but do not establish broad dining preferences."
+    },
+    {
+      "category": "Chinese language and culture",
+      "specific_interest": "Chinese-language learning and HSK reading practice.",
+      "interest_level": "medium",
+      "confidence": "high",
+      "reason": "Past context includes Chinese coursework and requests for language practice."
+    },
+    {
+      "category": "Fitness and exercise",
+      "specific_interest": "Elliptical workouts, cardio progress, and gym routines.",
+      "interest_level": "medium",
+      "confidence": "high",
+      "reason": "Past context includes workout logs and training questions."
+    },
+    {
+      "category": "Architecture and sustainability",
+      "specific_interest": "Eco-friendly home design elements, including green roofs, plants, solar panels, and recycled materials.",
+      "interest_level": "medium",
+      "confidence": "medium",
+      "reason": "A design project involved sustainable home features; personal travel interest in architecture is unconfirmed."
+    },
+    {
+      "category": "Science and engineering",
+      "specific_interest": "Physics, electrical concepts, and hands-on engineering projects.",
+      "interest_level": "medium",
+      "confidence": "high",
+      "reason": "Past coursework and a windmill-generator project are documented."
+    },
+    {
+      "category": "Nature and outdoor activities",
+      "specific_interest": "No particular activity or environment preference is established.",
+      "interest_level": "unknown",
+      "confidence": "low",
+      "reason": "Available context does not show whether the user seeks hiking, beaches, parks, or other outdoor experiences."
+    }
+  ],
+  "travel_preferences": {
+    "preferred_environments": [],
+    "preferred_activities": [],
+    "travel_pace": "unknown",
+    "planning_style": "unknown",
+    "transportation_preferences": [],
+    "accommodation_preferences": [],
+    "food_preferences": [],
+    "budget_preference": "unknown"
+  },
+  "potential_travel_interests": [
+    {
+      "experience": "An airshow or aviation museum visit with time for photography",
+      "reason": "The user has an established interest in airshow photography and telephoto camera gear.",
+      "confidence": "high"
+    },
+    {
+      "experience": "A motorsports event or racing museum with photography-friendly viewing",
+      "reason": "Motorsports and Laguna Seca have been mentioned as photography interests.",
+      "confidence": "high"
+    },
+    {
+      "experience": "A technology museum, electronics exhibition, or hands-on science center",
+      "reason": "The user repeatedly explores technology, PC hardware, physics, and engineering.",
+      "confidence": "medium"
+    },
+    {
+      "experience": "A history museum or historically focused walking tour",
+      "reason": "The user has sustained interest in U.S. history and historical analysis.",
+      "confidence": "medium"
+    },
+    {
+      "experience": "A food-focused outing featuring Vietnamese sandwiches or Korean markets",
+      "reason": "The user has asked about specific foods, ingredients, shops, and local promotions.",
+      "confidence": "medium"
+    },
+    {
+      "experience": "A visit to sustainable architecture or green-building projects",
+      "reason": "The user has worked with eco-friendly home design ideas; whether this translates into travel interest is uncertain.",
+      "confidence": "low"
+    }
+  ],
+  "dislikes": [],
+  "special_interests": [
+    "Airshow photography and telephoto photography",
+    "Motorsports photography",
+    "Competitive gaming and gaming technology",
+    "U.S. history and historical interpretation",
+    "Chinese-language learning",
+    "Hands-on physics and engineering"
+  ],
+  "recommendation_guidelines": [
+    "Use the San Jose / Bay Area as a broad home-region reference when local or departure context is useful; do not assume a specific airport or preferred route.",
+    "Consider aviation, motorsports, technology, history, and distinctive food experiences as possible recommendation themes.",
+    "When comparing options, provide concrete differences such as price range, travel time, logistics, and what makes each option distinctive.",
+    "Treat hiking, nightlife, luxury stays, theme parks, beaches, and other unverified preferences as exploratory options rather than established likes.",
+    "Do not infer that owning or considering camera, gaming, or vehicle equipment means the user wants to bring or use it on every trip.",
+    "Ask about pace, budget, lodging, transportation, companions, and dates when those details materially affect a trip recommendation."
+  ],
+  "unknown_preferences": [
+    "Preferred destinations and trip length",
+    "Preferred travel pace and amount of daily structure",
+    "Solo, family, or group travel habits",
+    "Preferred transportation and willingness to drive",
+    "Accommodation type and comfort level",
+    "Travel budget and spending priorities",
+    "Cuisine likes, dietary needs, and dining budget",
+    "Interest in hiking, beaches, nightlife, museums, or guided tours as travel activities",
+    "Accessibility needs and tolerance for crowds",
+    "Whether the user wants to travel with camera equipment"
+  ]
+}

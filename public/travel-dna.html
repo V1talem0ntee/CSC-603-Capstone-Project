@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Copy a prompt that creates a portable Travel DNA profile for personalized travel planning." />
+    <title>Create Travel DNA | AI Travel WingMan</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/travel-dna.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="AI Travel WingMan home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21 3-6.5 18-3.8-7.7L3 9.5 21 3Z" />
+            <path d="m10.7 13.3 5.1-5.1" />
+          </svg>
+        </span>
+        <span>AI Travel <strong>WingMan</strong></span>
+      </a>
+      <nav class="site-nav" aria-label="Planner pages"><a href="/">Trip planner</a><a href="/personalized">Personalized travel</a><a href="/travel-dna" aria-current="page">Create Travel DNA</a></nav>
+    </header>
+
+    <main class="planner prompt-page">
+      <div class="intro">
+        <p class="eyebrow">YOUR PORTABLE PROFILE</p>
+        <h1>Create your Travel DNA.</h1>
+        <p class="intro-description">Copy this prompt into an AI that knows you. Save its JSON response as <strong>travel_dna.json</strong>, then upload it on the Personalized travel page.</p>
+      </div>
+
+      <section class="input-panel prompt-panel" aria-labelledby="prompt-heading">
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">01</span>
+          <h2 id="prompt-heading">Travel DNA profile prompt</h2>
+        </div>
+        <p class="prompt-help">You can edit the prompt before copying it. The prompt asks the AI to use only information it can legitimately access and to label facts, inferences, and unknown preferences.</p>
+        <label class="sr-only" for="travel-dna-prompt">Travel DNA profile prompt</label>
+        <textarea id="travel-dna-prompt" class="prompt-text" spellcheck="false"># Travel DNA — Personal Profile Export
+
+I am using a personalized AI travel planning application called **Travl Winman**.
+
+Your task is to analyze everything you can legitimately access from our previous conversations, saved memories, and relevant information I have voluntarily shared with you.
+
+Your goal is to build a comprehensive profile of my personality, interests, preferences, and lifestyle patterns that could help another AI create highly personalized travel recommendations.
+
+**IMPORTANT:** Do not plan a trip. Your task is to create a portable personal profile that can be imported into another AI application.
+
+## 1. Analyze My Personal Preferences
+
+Identify relevant information about:
+
+- **Personality:** Curiosity, openness to new experiences, decision-making style, spontaneity, planning habits, and preference for structured or flexible activities.
+- **Interests and hobbies:** Technology, photography, history, art, food, nature, architecture, sports, entertainment, science, outdoor activities, and other interests.
+- **Travel preferences:** Preferred destinations, environments, transportation, travel pace, accommodation styles, and activities.
+- **Lifestyle:** Relevant routines, leisure activities, food preferences, and spending habits.
+- **Dislikes:** Activities, environments, or experiences I have explicitly disliked.
+- **Unique interests:** Specific hobbies or niche interests that could inspire unusual travel recommendations.
+
+Do not limit your analysis to topics explicitly related to travel. Consider how my general interests could translate into enjoyable travel experiences.
+
+## 2. Distinguish Facts From Inferences
+
+For each important preference:
+
+- Distinguish explicitly stated preferences from reasonable inferences.
+- Assign a confidence level: high, medium, or low.
+- Provide a brief explanation of the evidence.
+- Do not invent personal details.
+- Do not assume that mentioning an activity means I enjoy it.
+- Do not assume that owning a product means I always want to use it while traveling.
+- Use only information you can actually access.
+
+If you cannot access previous conversations, explain this limitation and analyze only the information currently available.
+
+## 3. Create My Travel DNA Profile
+
+Return a single valid JSON object using the following structure:
+```json
+{
+  "schema_version": "1.0",
+  "profile_type": "travel_dna",
+  "profile_summary": "",
+  "personality_traits": [
+    {
+      "trait": "",
+      "description": "",
+      "confidence": "high",
+      "evidence_type": "explicit"
+    }
+  ],
+  "interests": [
+    {
+      "category": "",
+      "specific_interest": "",
+      "interest_level": "high",
+      "confidence": "high",
+      "reason": ""
+    }
+  ],
+  "travel_preferences": {
+    "preferred_environments": [],
+    "preferred_activities": [],
+    "travel_pace": "unknown",
+    "planning_style": "unknown",
+    "transportation_preferences": [],
+    "accommodation_preferences": [],
+    "food_preferences": [],
+    "budget_preference": "unknown"
+  },
+  "potential_travel_interests": [
+    {
+      "experience": "",
+      "reason": "",
+      "confidence": "medium"
+    }
+  ],
+  "dislikes": [],
+  "special_interests": [],
+  "recommendation_guidelines": [],
+  "unknown_preferences": []
+}
+```
+
+## 4. Export Requirements
+
+- Output valid JSON only, without Markdown code fences, introductions, or additional commentary.
+- Keep all JSON keys in English.
+- Write descriptive values in English for compatibility across AI systems.
+- Use empty arrays or "unknown" when information is unavailable.
+- Do not create fake evidence or unsupported confidence scores.
+- Keep the profile focused on information useful for personalized travel recommendations.
+- Exclude passwords, account credentials, financial account identifiers, precise home addresses, and unnecessary sensitive personal information.
+- Do not include entire conversation transcripts.
+- Do not invent future travel plans.
+
+If your platform supports file creation, create a downloadable file named:
+
+**travel_dna.json**
+
+If file creation is unavailable, output the complete JSON directly so I can copy and save it.
+
+The JSON must be understandable by another AI system that has no access to our previous conversations.
+
+Generate my Travel DNA profile now.</textarea>
+        <div class="prompt-actions">
+          <p id="copy-status" role="status" aria-live="polite">Copy the full prompt, then paste it into your AI conversation.</p>
+          <button id="copy-prompt" type="button">Copy prompt</button>
+        </div>
+      </section>
+
+      <section class="prompt-next" aria-labelledby="next-heading">
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">02</span>
+          <h2 id="next-heading">Use the generated profile</h2>
+        </div>
+        <p>Save the AI's response as <strong>travel_dna.json</strong>, or copy the JSON response directly into the profile field.</p>
+        <a class="prompt-link" href="/personalized">Open Personalized travel</a>
+      </section>
+      <footer class="page-footer">AI Travel WingMan <span aria-hidden="true">&middot;</span> Every trip starts with an idea.</footer>
+    </main>
+  </body>
+</html>

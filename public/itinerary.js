@@ -4,6 +4,7 @@
   else root.TravelPlan = api;
 })(globalThis, function () {
   const DAY = 86400000;
+  const traveler = Object.freeze({ name: 'User1', origin: 'San Francisco, CA, USA' });
   const id = () => globalThis.crypto.randomUUID();
   const fail = message => { throw Object.assign(new Error(message), { status: 400 }); };
   const text = (value, max) => typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -382,6 +383,6 @@
     } catch { return null; }
   }
 
-  return { validateTrip, normalizePlan, parsePlan, createReport, demoPlan, editPlan, restorePlan,
+  return { traveler, validateTrip, normalizePlan, parsePlan, createReport, demoPlan, editPlan, restorePlan,
     normalizeResearch, lastStop, selectStay, clearStay, safeUrl, normalizeTraffic, peakPeriodsForDate, transferPeakWarnings };
 });

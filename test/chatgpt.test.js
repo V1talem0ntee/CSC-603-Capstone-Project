@@ -10,7 +10,8 @@ const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'test-key', alg: 'RS2
 const clock = 1794260000000;
 
 function fixture({ scopes = 'openid email profile resource.invoke chatgpt.tokens.use.direct', modifyClaims,
-  events, catalogError, responsesError, refresh = false, badSignature = false } = {}) {
+  events, models = [{ slug: 'test-model', display_name: 'Test model', visibility: 'list' }],
+  catalogError, responsesError, refresh = false, badSignature = false } = {}) {
   const session = {};
   const calls = [];
   let nonce;
@@ -38,7 +39,7 @@ function fixture({ scopes = 'openid email profile resource.invoke chatgpt.tokens
     }
     if (url.endsWith('/models')) {
       if (catalogError) return new Response('private upstream details', { status: catalogError });
-      return Response.json({ models: [{ slug: 'test-model', display_name: 'Test model', visibility: 'list' }] });
+      return Response.json({ models });
     }
     if (url.endsWith('/responses')) {
       if (responsesError) return new Response('private upstream details', { status: responsesError });
@@ -131,6 +132,21 @@ test('authorized sign-in and completed inference return text without leaking tok
   assert.equal(returning.searchParams.has('agent_name_hint'), false);
 });
 
+test('model picker uses visible account models and sends the selected slug', async () => {
+  const f = fixture({ models: [
+    { slug: 'hidden', visibility: 'hide' }, { slug: 'first', visibility: 'list' },
+    { slug: 'example-luna', display_name: 'Luna', visibility: 'list' },
+  ] });
+  await f.finish();
+  const catalog = await f.auth.listModels(f.session);
+  assert.deepEqual(catalog.models.map(model => model.slug), ['first', 'example-luna']);
+  assert.equal(catalog.defaultSlug, process.env.CHATGPT_MODEL || 'example-luna');
+  await assert.rejects(f.auth.suggest(f.session, 'Trip', null, null, 'hidden'), /unavailable/);
+  await f.auth.suggest(f.session, 'Trip', null, null, 'first');
+  const requests = f.calls.filter(call => call.url.endsWith('/responses'));
+  assert.deepEqual(requests.map(call => JSON.parse(call.options.body).model), ['first']);
+});
+
 test('identity-only sign-in cannot consume plan allowance', async () => {
   const f = fixture({ scopes: 'openid email profile' });
   await f.finish();
@@ -154,6 +170,7 @@ test('trip requests produce validated daily itinerary data from the model respon
   assert.equal(result.itinerary.days[0].hotel.completed, false);
   const request = JSON.parse(f.calls.find(call => call.url.endsWith('/responses')).options.body);
   assert.match(request.instructions, /exactly 1 days/);
+  assert.match(request.instructions, /User1\. Plan the trip from San Francisco, CA, USA/);
   assert.match(request.instructions, /Return only valid JSON/);
   assert.deepEqual(request.tools, [{ type: 'web_search' }]);
   assert.equal(request.tool_choice, 'required');

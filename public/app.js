@@ -1,4 +1,7 @@
 const form = document.querySelector('#trip-form');
+const traveler = TravelPlan.traveler;
+document.querySelector('#traveler-name').textContent = traveler.name;
+document.querySelector('#traveler-origin').textContent = traveler.origin;
 const destination = document.querySelector('#destination');
 const startDate = document.querySelector('#start-date');
 const endDate = document.querySelector('#end-date');
@@ -11,6 +14,8 @@ const output = document.querySelector('#output');
 const connectButton = document.querySelector('#connect-button');
 const disconnectButton = document.querySelector('#disconnect-button');
 const accountStatus = document.querySelector('#account-status');
+const modelField = document.querySelector('#model-field');
+const modelSelect = document.querySelector('#chatgpt-model');
 const usageLink = document.querySelector('#usage-link');
 const responseMode = document.querySelector('#response-mode');
 const outputNote = document.querySelector('#output-note');
@@ -51,6 +56,8 @@ async function localRequest(url, body) {
 }
 
 function showAccount() {
+  modelField.hidden = true;
+  modelSelect.replaceChildren();
   connectButton.hidden = account.connected;
   disconnectButton.hidden = !account.connected;
   usageLink.hidden = !account.connected;
@@ -72,6 +79,24 @@ async function loadAccount() {
     account = await response.json();
     showAccount();
     connectButton.disabled = false;
+    if (account.planEnabled) {
+      const currentAccount = account;
+      try {
+        const result = await fetch('/api/models', { signal: AbortSignal.timeout(15000), cache: 'no-store' });
+        const catalog = await result.json();
+        if (currentAccount !== account) return;
+        if (!result.ok) throw new Error(catalog.error);
+        for (const model of catalog.models) modelSelect.add(new Option(model.display_name, model.slug));
+        modelSelect.value = catalog.defaultSlug;
+        if (!modelSelect.value) {
+          modelSelect.add(new Option('Choose an available model', ''), 0);
+          modelSelect.value = '';
+        }
+        modelField.hidden = false;
+      } catch (error) {
+        if (currentAccount === account) accountStatus.textContent = 'Could not load the model picker. Refresh to retry. ' + error.message;
+      }
+    }
   } catch {
     accountStatus.textContent = 'Could not check the connection. Make sure the local server is running, then refresh.';
   }
@@ -182,7 +207,7 @@ form.addEventListener('submit', async (event) => {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'TravelWingMan' },
-      body: JSON.stringify({ message, trip, ...(personalization ? { personalization } : {}) }),
+      body: JSON.stringify({ message, trip, model: modelSelect.value || undefined, ...(personalization ? { personalization } : {}) }),
       signal: controller.signal,
     });
     const data = await response.json();

@@ -107,7 +107,7 @@ Web search must be available to the selected ChatGPT model/account/workspace.
 If the provider rejects search, the app reports that failure rather than
 silently falling back to invented price references. Account eligibility, live
 search, and published-price availability still require testing with a real account.
-Available models are discovered from the connected account. Optionally set
+Both planners list the connected account’s visible models. The page selection applies to trip generation and restaurant searches. The default is the first listed Luna model when available, otherwise the first visible model. To override the default, set
 `CHATGPT_MODEL` to an available model slug before starting the server.
 
 ## Traffic and departure planning
@@ -177,6 +177,7 @@ and it does not guarantee an optimal or congestion-free route.
 | POST | `/auth/chatgpt/start` | Start official browser sign-in |
 | GET | `/auth/callback` | Process the OAuth callback |
 | POST | `/auth/chatgpt/disconnect` | Clear the local session |
+| GET | `/api/models` | Visible models and default slug for the connected account |
 | POST | `/api/chat` | Generate a demo or authorized AI response |
 | POST | `/api/dining` | Search around a confirmed stay or day-end sightseeing stop |
 

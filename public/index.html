@@ -26,7 +26,10 @@
 
     <main class="planner">
       <div class="intro">
-        <p class="eyebrow">YOUR NEXT ADVENTURE</p>
+        <details class="traveler-profile">
+          <summary id="traveler-name"></summary>
+          <p><strong>Default departure city</strong><br><span id="traveler-origin"></span></p>
+        </details>
         <h1>Where will you go next?</h1>
         <p class="intro-description">Tell us your destination, travel dates, and budget to start planning your trip.</p>
       </div>
@@ -38,6 +41,9 @@
           <p class="account-notice">When connected, trip details and confirmed accommodation addresses are sent to OpenAI. Hotel, dining and local traffic research use web search and your ChatGPT plan allowance. Eligibility and workspace policies apply, including for school accounts.</p>
         </div>
         <div class="account-actions">
+          <label id="model-field" hidden>ChatGPT model
+            <select id="chatgpt-model"></select>
+          </label>
           <button id="connect-button" type="button" data-oai-siwc-button disabled>Continue with ChatGPT</button>
           <a class="usage-link" id="usage-link" href="https://chatgpt.com/#settings" target="_blank" rel="noopener noreferrer" hidden>Manage access in ChatGPT</a>
           <button class="disconnect-button" id="disconnect-button" type="button" hidden>Disconnect</button>

@@ -74,6 +74,13 @@ function createApp({ auth = createChatGPT(), hostId, appPort = port } = {}) {
     if (req.method === 'GET' && pathname === '/api/auth/status') {
       return sendJson(res, 200, auth.status(session));
     }
+    if (req.method === 'GET' && pathname === '/api/models') {
+      try {
+        return sendJson(res, 200, await auth.listModels(session));
+      } catch (error) {
+        return sendJson(res, error.status || 502, { error: error.status ? error.message : 'Could not load ChatGPT models.' });
+      }
+    }
     if (req.method === 'POST' && pathname === '/auth/chatgpt/start') {
       if (!session) {
         if (sessions.size >= 100) return sendJson(res, 429, { error: 'Too many sessions. Restart the local server.' });
@@ -149,7 +156,7 @@ function createApp({ auth = createChatGPT(), hostId, appPort = port } = {}) {
       if (!auth.status(session).connected) {
         return sendJson(res, 200, { mode: 'demo', recommendations: { mode: 'unavailable', items: [], retrievedAt: null } });
       }
-      return sendJson(res, 200, { mode: 'chatgpt', recommendations: await auth.dining(session, trip, anchor) });
+      return sendJson(res, 200, { mode: 'chatgpt', recommendations: await auth.dining(session, trip, anchor, body.model) });
     } catch (error) {
       return sendJson(res, error.status || 500, { error: error.status ? error.message : 'Could not retrieve restaurant recommendations.' });
     }
@@ -167,7 +174,7 @@ function createApp({ auth = createChatGPT(), hostId, appPort = port } = {}) {
       const trip = body.trip === undefined ? undefined : validateTrip(body.trip, { destinationOptional: Boolean(personalization) });
       if (personalization && !trip) return sendJson(res, 400, { error: 'Personalized planning requires trip details.' });
       if (auth.status(session).connected) {
-        return sendJson(res, 200, await auth.suggest(session, message.trim(), trip, personalization));
+        return sendJson(res, 200, await auth.suggest(session, message.trim(), trip, personalization, body.model));
       }
       if (trip && !trip.destination) {
         return sendJson(res, 400, { error: 'Connect ChatGPT to receive an AI-recommended destination, or enter a destination to use demo mode.' });

@@ -20,6 +20,11 @@ svg { display: block; width: 24px; height: 24px; }
 .brand-icon svg { width: 21px; height: 21px; }
 .planner { width: min(1080px, calc(100% - 96px)); margin: 48px auto 0; }
 .intro { margin-bottom: 34px; }
+.traveler-profile { max-width: 360px; margin-bottom: 18px; color: #304b3d; font-size: 14px; }
+.traveler-profile summary { width: fit-content; padding: 9px 13px; border: 1px solid #c9d8ca; border-radius: 8px; background: white; color: var(--accent); font-weight: 600; cursor: pointer; }
+.traveler-profile summary:hover { background: #edf3ed; }
+.traveler-profile summary:focus-visible { outline: 3px solid #83ac90; outline-offset: 3px; }
+.traveler-profile p { margin: 10px 0 0; line-height: 1.6; }
 .eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 2.4px; margin: 0 0 15px; }
 h1 { font-size: clamp(27px, 3vw, 38px); line-height: 1.4; font-weight: 650; letter-spacing: -1px; margin: 0 0 13px; }
 .intro-description { margin: 0; color: #738078; font-size: 14px; line-height: 1.8; }

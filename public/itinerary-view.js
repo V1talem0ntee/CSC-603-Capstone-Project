@@ -310,7 +310,7 @@
     try {
       const response = await fetch('/api/dining', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'TravelWingMan' },
-        body: JSON.stringify({ trip: TravelPlan.validateTrip(plan), anchor }), signal: pending.controller.signal,
+        body: JSON.stringify({ trip: TravelPlan.validateTrip(plan), anchor, model: document.querySelector('#chatgpt-model')?.value || undefined }), signal: pending.controller.signal,
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Restaurant search could not be completed.');
